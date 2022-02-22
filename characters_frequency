@@ -1,0 +1,24 @@
+WITH address_str as (
+    SELECT
+        CONCAT(
+            orderer.prefecture,
+            orderer.city,
+            orderer.subAddress,
+            orderer.familyName,
+            orderer.firstName
+        ) as concat_address
+    FROM `project.dataset.table`
+    WHERE DATE(orderDatetime) <= "2022-02-22"
+    GROUP BY concat_address
+), agg as (
+    SELECT STRING_AGG(concat_address) as agg_address FROM address_str
+), split_char as (
+    SELECT SPLIT(agg_address , '') as split_addess FROM agg
+), splitted_char_rows as (
+    SELECT splitted_char FROM split_char, UNNEST(split_addess) as splitted_char
+)   SELECT
+        splitted_char,
+        COUNT(splitted_char) as count
+    FROM splitted_char_rows
+    GROUP BY splitted_char
+    ORDER BY count DESC
